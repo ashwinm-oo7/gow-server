@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+
 const dotenv = require("dotenv");
 const userRoutes = require("./Components/ClothingController/UserController.js");
 const categoryRoutes = require("./Components/ClothingController/CategoryController.js");
@@ -53,6 +55,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.static(path.join(__dirname, "build")));
 
 app.use("/user", userRoutes);
 app.use("/category", categoryRoutes);
@@ -72,6 +75,9 @@ app.use("/mobile", mobileProductRoutes);
 const PORT = process.env.BACKEND_PORT || 4000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 // Create WebSocket server
