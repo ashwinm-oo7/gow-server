@@ -10,11 +10,16 @@ class Database {
   }
 
   async connect() {
+    console.log("MONGO_USERNAME:", process.env.MONGO_USERNAME);
+    console.log("MONGO_PASSWORD:", process.env.MONGO_PASSWORD);
+    console.log("MONGO_URI:", process.env.MONGO_URI);
+    console.log("DB Name:", process.env.dbName);
+
     try {
       // console.log(this.uri);
       // console.log(this.dbName);
       await this.client.connect();
-      // console.log("Connected to MongoDB");
+      console.log("✅ Connected successfully to MongoDB!");
       this.db = this.client.db(this.dbName);
     } catch (error) {
       console.error("Error:", error);
