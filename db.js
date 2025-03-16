@@ -35,16 +35,20 @@ class Database {
   }
 }
 
-const username = process.env.MONGO_USERNAME;
-const password = process.env.MONGO_PASSWORD;
-const uri = `mongodb+srv://${username}:${encodeURIComponent(password)}@${
-  process.env.MONGO_URI
-}/?retryWrites=true&w=majority`;
+// const username = process.env.MONGO_USERNAME;
+// const password = process.env.MONGO_PASSWORD;
+// const uris = process.env.MONGO_URI;
+const username = "seema_26";
+const password = "Mongo@2611";
+const uris = "cluster0.vlvupsx.mongodb.net";
+const uri = `mongodb+srv://${username}:${encodeURIComponent(
+  password
+)}@${uris}/?retryWrites=true&w=majority`;
 
 // console.log(uri);
 const dbName = process.env.dbName;
 
-const database = new Database(uri, dbName);
+const database = new Database(uri, "clothing");
 
 // Export a function to connect to the database and return the database instance
 async function connectDatabase() {
