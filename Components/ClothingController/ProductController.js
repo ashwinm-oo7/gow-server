@@ -190,38 +190,6 @@ router.get("/getAllProducts", async (req, res) => {
           }))
         : [];
 
-      // Update product media files (images/videos)
-      // product.productImages = await Promise.all(
-      //   product.productImages.map(async (media) => {
-      //     try {
-      //       if (allowedImageFormats.includes(media.type)) {
-      //         // const dataURL = await getBase64Image(media.filePath);
-      //         const dataURL = `data:image/webp;base64,${media.filePath}`;
-      //         console.log(dataURL);
-      //         return {
-      //           ...media,
-      //           dataURL: dataURL || null, // Use image handler
-      //         };
-      //       } else if (allowedVideoFormats.includes(media.type)) {
-      //         // const dataURL = await getBase64Video(media.filePath);
-      //         const dataURL = `data:video/mp4;base64,${media.filePath}`;
-
-      //         return {
-      //           ...media,
-      //           dataURL: dataURL || null, // Use video handler
-      //         };
-      //       }
-      //       return media;
-      //     } catch (error) {
-      //       console.error(`Error processing media: ${error.message}`);
-      //       return {
-      //         ...media,
-      //         dataURL: null, // Set null in case of error
-      //       };
-      //     }
-      //   })
-      // );
-
       product.variants = productVariants;
       await redisClient.set(id, JSON.stringify(product), { EX: 36000 }); // Cache for 1 hour
 
@@ -265,54 +233,6 @@ router.get("/getAllProducts", async (req, res) => {
           const variants = variantsByProductId[product._id] || [];
           const productWithMedia = {
             ...product,
-            // productImages: await Promise.all(
-            //   product.productImages &&
-            //     product.productImages.map(async (media) => {
-            //       if (!media.type || !media) {
-            //         return null;
-            //       }
-            //       try {
-            //         if (allowedImageFormats.includes(media.type)) {
-            //           // const dataURL = await getBase64Image(media.filePath);
-            //           const dataURL = `data:image/webp;base64,${media.filePath}`;
-
-            //           // console.log("getAll ADmin", dataURL);
-            //           return {
-            //             ...media,
-            //             dataURL: (dataURL && dataURL) || null, // Use image handler
-            //           };
-            //         } else if (allowedVideoFormats.includes(media.type)) {
-            //           // const dataURL = await getBase64Video(media.filePath);
-            //           const dataURL = `data:video/mp4;base64,${media.filePath}`;
-
-            //           return {
-            //             ...media,
-            //             dataURL: dataURL || null, // Use video handler
-            //           };
-            //         } else {
-            //           null;
-            //         }
-            //         return media; // Return unmodified media if it's not an image or video
-            //       } catch (error) {
-            //         console.error(`Error processing media: ${error.message}`);
-            //         return {
-            //           ...media,
-            //           dataURL: null, // Set null in case of error
-            //         };
-            //       }
-            //     })
-            // ),
-            productImages: product.productImages
-              ? product.productImages.map((media) => ({
-                  ...media,
-                  dataURL: allowedImageFormats.includes(media.type)
-                    ? "data:image/webp;base64"
-                    : allowedVideoFormats.includes(media.type)
-                    ? "data:video/mp4;base64"
-                    : null,
-                }))
-              : [],
-
             variants,
           };
 
