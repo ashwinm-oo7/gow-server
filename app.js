@@ -38,6 +38,7 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 const allowedOrigins = [
   "http://localhost:3000",
   process.env.DeployLink || "",
+  process.env.DeployLinkSecond || "",
   "http://localhost:4000",
 ];
 

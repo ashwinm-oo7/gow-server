@@ -160,7 +160,7 @@ router.get("/getAllProducts", async (req, res) => {
       const cachedProduct = await redisClient.get(id);
 
       if (cachedProduct) {
-        return res.status(200).json(JSON.parse(cachedProduct));
+        // return res.status(200).json(JSON.parse(cachedProduct));
       }
 
       // Fetch a single product by ID

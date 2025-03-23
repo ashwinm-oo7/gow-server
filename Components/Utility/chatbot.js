@@ -3,7 +3,7 @@ const WebSocket = require("ws");
 // Sample predefined questions and answers
 const predefinedQuestions = [
   // Greetings and General Information
-  { question: "hello", answer: "Hello, welcome to the Maurya Shopping World!" },
+  { question: "hello", answer: "Hello, welcome to the Gallaxy Of Wishes!" },
   { question: "hi", answer: "Hi there! How can I assist you today?" },
   {
     question: "who are you?",
@@ -18,7 +18,7 @@ const predefinedQuestions = [
   {
     question: "what is your name?",
     answer:
-      "I'm the Maurya Shopping World chatbot, here to assist you with your queries.",
+      "I'm the Gallaxy Of Wishes World chatbot, here to assist you with your queries.",
   },
   {
     question: "how can you help me?",
@@ -283,7 +283,7 @@ const predefinedQuestions = [
   {
     question: "how can I contact customer service?",
     answer:
-      "You can contact our customer service via email at support@mauryashoppingworld.com or call us at +91-1234567890.",
+      "You can contact our customer service via email at support@gallaxyofwishes.com or call us at +91-1234567890.",
   },
   {
     question: "what are your customer service hours?",
@@ -431,7 +431,63 @@ const predefinedQuestions = [
   {
     question: "how can I become a supplier?",
     answer:
-      "If you're interested in becoming a supplier, please contact our business development team via email at supplier@mauryashoppingworld.com.",
+      "If you're interested in becoming a supplier, please contact our business development team via email at supplier@gallaxyofwishes.com.",
+  },
+  {
+    question: "what is galaxy of wishes",
+    answer:
+      "Galaxy of Wishes is an online gifting platform where you can choose and send gifts to your loved ones for any occasion.",
+  },
+
+  {
+    question: "How does Galaxy of Wishes work?",
+    answer:
+      "Galaxy of Wishes allows users to browse a variety of gifts, select the perfect one, and send it directly to their loved ones.",
+  },
+  {
+    question: "Is Galaxy of Wishes free to use?",
+    answer:
+      "Browsing and selecting gifts is free, but the cost of the gifts depends on the item chosen.",
+  },
+  {
+    question: "Can I customize my gift?",
+    answer:
+      "Yes, Galaxy of Wishes offers customization options for selected gifts, such as personalized messages and wrapping.",
+  },
+  {
+    question: "How long does delivery take?",
+    answer:
+      "Delivery time varies depending on location and shipping method, but most gifts arrive within 3-7 business days.",
+  },
+  {
+    question: "Do you offer international shipping?",
+    answer:
+      "Yes, Galaxy of Wishes offers international shipping to various countries, though shipping costs and times may vary.",
+  },
+  {
+    question: "What payment methods are accepted?",
+    answer:
+      "We accept major credit cards, debit cards, and digital payment methods like PayPal and Google Pay.",
+  },
+  {
+    question: "Can I track my order?",
+    answer:
+      "Yes, once your order is shipped, you will receive a tracking number to monitor its delivery status.",
+  },
+  {
+    question: "What if my gift is damaged or lost?",
+    answer:
+      "If your gift arrives damaged or is lost in transit, contact our customer support for assistance with a replacement or refund.",
+  },
+  {
+    question: "Can I schedule a gift delivery for a future date?",
+    answer:
+      "Yes, we allow you to schedule a gift delivery in advance for special occasions.",
+  },
+  {
+    question: "Do you have a return policy?",
+    answer:
+      "Yes, we offer a return policy for eligible items. Please check our return policy page for details.",
   },
 ];
 
@@ -519,7 +575,7 @@ wss.on("connection", (ws) => {
     ws.send(response);
   });
 
-  ws.send("Welcome to the Maurya Shopping World chatbot! How can I help you?");
+  ws.send("Welcome to the Gallay Of Wishes chatbot! How can I help you?");
 });
 
 module.exports = wss;
