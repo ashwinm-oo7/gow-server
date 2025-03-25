@@ -231,6 +231,10 @@ router.post("/add", async (req, res) => {
 router.get("/getAll", async (req, res) => {
   try {
     const { id } = req.query; // Use "id" query parameter for flexibility
+    if (id && !ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid Order ID format" });
+    }
+
     let query = {}; // Default query to fetch all payment details
 
     // If "id" is provided, construct a query to filter by the specific OrderID
@@ -290,6 +294,53 @@ router.get("/getAll", async (req, res) => {
   }
 });
 
+router.get("/getOrderList", async (req, res) => {
+  try {
+    const { id } = req.query; // If an `id` query parameter is passed, we'll validate it
+
+    // 1. Validate that `id` is a valid ObjectId (if present)
+    if (id && !ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid Order ID format" });
+    }
+
+    // Construct the query based on the presence of the `id` parameter
+    let query = {};
+    if (id) {
+      query = { _id: new ObjectId(id) }; // Find the specific order by ID
+    }
+
+    // Access the MongoDB database
+    const dbInstance = await db.connectDatabase();
+    const db1 = await dbInstance.getDb();
+    const paymentCollection = db1.collection("order");
+
+    // 2. Fetch only necessary fields: _id, InvoiceNumber, and createdAt
+    const projection = { _id: 1, InvoiceNumber: 1, createdAt: 1 };
+
+    // 3. Fetch the orders based on the query
+    const orders = await paymentCollection
+      .find(query)
+      .project(projection)
+      .toArray();
+
+    // 4. Handle case where no orders are found
+    if (orders.length === 0) {
+      if (id) {
+        return res.status(404).json({ message: "Order not found" }); // Specific error for an invalid `id`
+      }
+      return res.status(404).json({ message: "No orders found" }); // No orders available
+    }
+
+    // 5. Return the fetched orders with a success status
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching order list:", error.message);
+    // Return a generic server error if something goes wrong
+    return res.status(500).json({
+      message: "Failed to fetch order list. Please try again later.",
+    });
+  }
+});
 router.get("/getInvoice", async (req, res) => {
   try {
     const { userEmail } = req.query;
