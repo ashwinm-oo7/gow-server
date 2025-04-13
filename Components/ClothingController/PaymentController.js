@@ -74,6 +74,7 @@ router.post("/add", async (req, res) => {
       products,
       mobileNumber,
       transactionId,
+      phoneNumber,
     } = req.body;
 
     // Validate the payment details
@@ -119,6 +120,7 @@ router.post("/add", async (req, res) => {
     const paymentWithDate = {
       InvoiceNumber: invoiceNumber, // Assign the generated InvoiceNumber
       userEmail,
+      phoneNumber,
       deliveryAddress,
       paymentMethod,
       totalQuantity,
@@ -128,6 +130,14 @@ router.post("/add", async (req, res) => {
       amountPaid: parsedAmountPaid,
       products,
       createdAt,
+      orderStatus: "confirmed",
+      orderTimeline: [
+        {
+          status: "confirmed",
+          timestamp: new Date(),
+          note: "Order confirmed by system",
+        },
+      ],
     };
 
     if (paymentMethod === "Online") {
@@ -315,7 +325,13 @@ router.get("/getOrderList", async (req, res) => {
     const paymentCollection = db1.collection("order");
 
     // 2. Fetch only necessary fields: _id, InvoiceNumber, and createdAt
-    const projection = { _id: 1, InvoiceNumber: 1, createdAt: 1 };
+    const projection = {
+      _id: 1,
+      InvoiceNumber: 1,
+      createdAt: 1,
+      orderStatus: 1,
+      orderTimeline: 1,
+    };
 
     // 3. Fetch the orders based on the query
     const orders = await paymentCollection
@@ -341,6 +357,38 @@ router.get("/getOrderList", async (req, res) => {
     });
   }
 });
+router.post("/update-order-status", async (req, res) => {
+  try {
+    const { orderId, newStatus, note } = req.body;
+    const dbInstance = await db.connectDatabase();
+    const db1 = await dbInstance.getDb();
+    const paymentCollection = db1.collection("order");
+
+    const updateResult = await paymentCollection.updateOne(
+      { _id: new ObjectId(orderId) },
+      {
+        $set: { orderStatus: newStatus },
+        $push: {
+          orderTimeline: {
+            status: newStatus,
+            timestamp: new Date(),
+            note: note || `Status updated to ${newStatus}`,
+          },
+        },
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order status updated successfully" });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Failed to update order status" });
+  }
+});
+
 router.get("/getInvoice", async (req, res) => {
   try {
     const { userEmail } = req.query;

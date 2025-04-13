@@ -36,9 +36,10 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // Middleware
 // app.use(cors());
 const allowedOrigins = [
+  "http://localhost:3000",
   process.env.DeployLink || "",
   process.env.DeployLinkSecond || "",
-  "https://galaxyofwishes.vercel.app/",
+  "http://localhost:4000",
 ];
 
 const corsOptions = {
