@@ -8,6 +8,7 @@ const {
   getBase64Video,
 } = require("../Utility/FileUtilityCloudStorage");
 // const { getCache, setCache, deleteCache } = require("../Utility/cache");
+const zlib = require("zlib");
 
 const db = require("../../db");
 const { ObjectId } = require("mongodb");
@@ -20,6 +21,7 @@ const allowedImageFormats = [
 ];
 const allowedVideoFormats = ["video/mp4", "video/webm", "video/ogg"];
 const redisClient = require("../Utility/RedisClient");
+const CACHE_EXPIRY = 86400; // 24 hours
 
 async function connectRedis() {
   if (!redisClient.isOpen) {
@@ -147,21 +149,21 @@ router.get("/getAllProducts", async (req, res) => {
     await connectRedis();
 
     const { id } = req.query;
-    const isAdmin = req.query.isAdmin === "true";
-    const dbInstance = await db.connectDatabase();
-    const db1 = await dbInstance.getDb();
-    const productCollection = db1.collection("product");
-    const variantCollection = db1.collection("variant");
     // cache.flushAll();
     if (!redisClient.isOpen) {
       await client.connect();
     }
+    const isAdmin = req.query.isAdmin === "true";
     if (id) {
       const cachedProduct = await redisClient.get(id);
 
       if (cachedProduct) {
-        // return res.status(200).json(JSON.parse(cachedProduct));
+        return res.status(200).json(JSON.parse(cachedProduct));
       }
+      const dbInstance = await db.connectDatabase();
+      const db1 = await dbInstance.getDb();
+      const productCollection = db1.collection("product");
+      const variantCollection = db1.collection("variant");
 
       // Fetch a single product by ID
       const productQuery = { _id: new ObjectId(id) };
@@ -191,7 +193,7 @@ router.get("/getAllProducts", async (req, res) => {
         : [];
 
       product.variants = productVariants;
-      await redisClient.set(id, JSON.stringify(product), { EX: 36000 }); // Cache for 1 hour
+      await redisClient.set(id, JSON.stringify(product), { EX: CACHE_EXPIRY }); // Cache for 1 hour
 
       return res.status(200).json(product);
     } else {
@@ -205,7 +207,10 @@ router.get("/getAllProducts", async (req, res) => {
       if (cachedProducts) {
         return res.status(200).json(JSON.parse(cachedProducts));
       }
-
+      const dbInstance = await db.connectDatabase();
+      const db1 = await dbInstance.getDb();
+      const productCollection = db1.collection("product");
+      const variantCollection = db1.collection("variant");
       const allProducts = await productCollection.find(query).toArray();
 
       // console.log("Stock GET cached: " + cacheProduct);
@@ -242,7 +247,7 @@ router.get("/getAllProducts", async (req, res) => {
       await redisClient.set(
         queryCacheKey,
         JSON.stringify(productsWithVariants),
-        { EX: 36000 }
+        { EX: CACHE_EXPIRY }
       );
 
       res.status(200).json(productsWithVariants);
@@ -537,6 +542,11 @@ router.delete("/deleteProduct/:productId", async (req, res) => {
     await variantsCollection.deleteMany({
       productId: new ObjectId(productIdToDelete),
     });
+    await Promise.all([
+      redisClient.del(productIdToDelete),
+      redisClient.del("all_products_admin"),
+      redisClient.del("all_products_user"),
+    ]);
 
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {

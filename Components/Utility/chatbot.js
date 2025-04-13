@@ -489,9 +489,15 @@ const predefinedQuestions = [
     answer:
       "Yes, we offer a return policy for eligible items. Please check our return policy page for details.",
   },
+  {
+    question: "what kind of offer?",
+    answer:
+      "all kind of offer available if there is any offer active then you can see in the products details",
+  },
 ];
 
 const stringSimilarity = require("string-similarity");
+const { default: axios } = require("axios");
 
 function normalizeText(text) {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, "");
@@ -562,20 +568,121 @@ function getResponse(userInput) {
   }
 }
 
+const predefinedReplies = [
+  {
+    keywords: ["contact", "phone", "support", "help", "number", "call"],
+    response: "You can contact our support team at 📞 9869904331 on WhatsApp.",
+  },
+];
+
+function checkCustomReply(userMessage) {
+  const text = typeof userMessage === "string" ? userMessage : "";
+
+  const predefinedReplies = [
+    {
+      keywords: ["contact", "phone", "number", "call", "support", "reach"],
+      response: "📞 You can call or WhatsApp us at: 9869904331",
+    },
+    {
+      keywords: ["email", "mail", "gmail", "support mail", "help mail"],
+      response: "📧 You can reach us at: support@mauryagalaxyofwishes.com",
+    },
+    {
+      keywords: [
+        "location",
+        "address",
+        "where",
+        "place",
+        "located",
+        "map",
+        "find",
+        "shop",
+        "store",
+      ],
+      response: `📍 We are available at the following locations:\n
+    🏙️ Mumbai: https://maps.app.goo.gl/uimHaaLuHBercqGv5\n
+    🏙️ Pune: https://maps.app.goo.gl/JuCrf9848e3JjC4R7\n
+    🏙️ Hyderabad: https://maps.app.goo.gl/fvFzAnFDq2xzZd2B7\n
+    🏙️ Pratapgarh: https://maps.app.goo.gl/SfBChwTuZZNLByDMA\n
+    🏙️ Kanpur: https://maps.app.goo.gl/E9LRRgf85oQRgNBE9\n
+    Feel free to visit or check us on Google Maps!`,
+    },
+  ];
+
+  for (const rule of predefinedReplies) {
+    for (const keyword of rule.keywords) {
+      if (text.toLowerCase().includes(keyword)) {
+        return rule.response;
+      }
+    }
+  }
+
+  return null;
+}
+
 const wss = new WebSocket.Server({ noServer: true });
 
+// wss.on("connection", (ws) => {
+//   ws.on("message", (message) => {
+//     console.log(`Received message => ${message}`);
+
+//     const userQuestion =
+//       typeof message === "string" ? message : String(message);
+//     const response = getResponse(userQuestion);
+
+//     ws.send(response);
+//   });
+
+//   ws.send("Welcome to the Gallay Of Wishes chatbot! How can I help you?");
+// });
+
 wss.on("connection", (ws) => {
-  ws.on("message", (message) => {
-    console.log(`Received message => ${message}`);
+  console.log("Client connected");
 
-    const userQuestion =
-      typeof message === "string" ? message : String(message);
-    const response = getResponse(userQuestion);
+  ws.on("message", async (message) => {
+    const customReply = checkCustomReply(message.toString());
 
-    ws.send(response);
+    if (customReply) {
+      ws.send(customReply);
+      return;
+    }
+
+    const userInput = message.toString();
+    console.log("Received:", userInput);
+
+    try {
+      const aiRes = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions", // or any compatible free API
+        {
+          model: "openai/gpt-3.5-turbo", // Or any model available
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful shopping assistant for Maurya Galaxy of Wishes.",
+            },
+            { role: "user", content: userInput },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const botReply = aiRes.data.choices[0].message.content.trim();
+      ws.send(botReply);
+    } catch (error) {
+      console.error("Chatbot error:", error.message);
+      ws.send("Sorry, there was an issue getting a response.");
+    }
   });
-
-  ws.send("Welcome to the Gallay Of Wishes chatbot! How can I help you?");
+  ws.send("Welcome to Gallay Of Wishes chatbot! How can I help you?");
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
 });
 
 module.exports = wss;
