@@ -1,30 +1,15 @@
 const WebSocket = require("ws");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const db = require("../../db");
 const { ObjectId } = require("mongodb");
-require("dotenv").config();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const wss = new WebSocket.Server({ noServer: true });
 
 const { default: axios } = require("axios");
-const extractOrderId = (message) => {
-  const match = message.match(/[a-f\d]{24}/i); // MongoDB ObjectId format
-  return match ? match[0] : null;
-};
-// const fs = require("fs");
 
-// Read content from a text or PDF (converted to text beforehand)
-// const contentFromFile = fs.readFileSync("./your-details.txt", "utf8"); // Make sure it's a plain text file
-
-// const messages = [
-//   {
-//     role: "system",
-//     content: contentFromFile,
-//   },
-// ];
-
-const wss = new WebSocket.Server({ noServer: true });
 function readSystemPrompt() {
   const filePath = path.join(__dirname, "SystemSetup.md"); // adjust if needed
   try {
@@ -45,7 +30,7 @@ function formatPrompt(userMessage, history = []) {
     .join("\n");
 
   return `
-You are an ERP software assistant.
+You are an Maurya software  for Galaxy of Wishes assistant.
 
 ${systemPrompt}
 
@@ -64,8 +49,85 @@ wss.on("connection", (ws) => {
   let history = []; // Optional: maintain conversation state
 
   ws.on("message", async (message) => {
-    const userText = message.toString();
+    const userText = message.toString().toLowerCase();
+
     history.push({ sender: "user", text: userText });
+    const userInput = userText;
+    const lowerText = userInput;
+
+    const emailMatch = userInput.match(
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/
+    );
+    const phoneMatch = userInput.match(/(\+91)?[6-9]\d{9}/); // Indian numbers
+    const orderIdMatch = userInput.match(/[a-f\d]{24}/i);
+    const trackingIntent =
+      lowerText.includes("track my order") ||
+      lowerText.includes("track  order") ||
+      lowerText.includes("order status");
+
+    if (trackingIntent && !emailMatch && !phoneMatch && !orderIdMatch) {
+      pendingTrackRequests.set(ws, true);
+      return ws.send(
+        "🔍 Please provide your Order ID, Email, or Phone Number so I can check the order status for you."
+      );
+    }
+    const isPending = pendingTrackRequests.get(ws);
+    if (isPending || trackingIntent) {
+      try {
+        const dbInstance = await db.connectDatabase();
+        const db1 = await dbInstance.getDb();
+        const orderCollection = db1.collection("order");
+
+        let order = null;
+
+        if (orderIdMatch) {
+          // Search by Order ID
+          order = await orderCollection.findOne(
+            { _id: new ObjectId(orderIdMatch[0]) },
+            { projection: { orderStatus: 1, orderTimeline: 1 } }
+          );
+        } else if (emailMatch) {
+          // Search latest by email
+          order = await orderCollection.findOne(
+            { userEmail: emailMatch[0] },
+            {
+              sort: { createdAt: -1 },
+              projection: { orderStatus: 1, orderTimeline: 1 },
+            }
+          );
+        } else if (phoneMatch) {
+          // Search latest by phone
+          order = await orderCollection.findOne(
+            {
+              phoneNumber: { $regex: phoneMatch[0], $options: "i" },
+            },
+            {
+              sort: { createdAt: -1 },
+              projection: { orderStatus: 1, orderTimeline: 1 },
+            }
+          );
+        }
+        pendingTrackRequests.delete(ws);
+
+        if (!order) {
+          return ws.send(
+            "🔍 Sorry, no matching order found. Please double-check the email, phone number, or Order ID."
+          );
+        }
+
+        // Format response
+        let response = `📦 Your order is currently: **${order.orderStatus}**\n\n📘 Order Timeline:\n`;
+        order.orderTimeline.forEach((entry) => {
+          const date = new Date(entry.timestamp).toLocaleString();
+          response += `- ${entry.status} (${date}): ${entry.note}\n`;
+        });
+
+        return ws.send(response);
+      } catch (err) {
+        console.error("Error tracking order:", err);
+        return ws.send("⚠️ Something went wrong while checking your order.");
+      }
+    }
 
     const prompt = formatPrompt(userText, history);
 

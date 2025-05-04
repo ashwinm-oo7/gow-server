@@ -18,7 +18,8 @@ const cartRoutes = require("./Components/ClothingController/CartController.js");
 const mobileProductRoutes = require("./Components/MobilePhoneController/MobileAddProduct.js");
 
 // const WebSocket = require("ws");
-const wss = require("./Components/Utility/chatbot.js"); // Add this line
+// const wss = require("./Components/Utility/chatbot.js");
+const wss = require("./Components/Utility/chatbotReusable/chatbot.js");
 
 const bodyParser = require("body-parser");
 
