@@ -14,7 +14,7 @@ class Database {
       // console.log(this.uri);
       // console.log(this.dbName);
       await this.client.connect();
-      console.log("Connected to MongoDB");
+      // console.log("Connected to MongoDB");
       this.db = this.client.db(this.dbName);
     } catch (error) {
       console.error("Error:", error);

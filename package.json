@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@copilotkit/react-core": "^1.8.9",
+    "@copilotkit/react-ui": "^1.8.9",
+    "@google/generative-ai": "^0.24.1",
     "@types/node": "^20.12.8",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
@@ -35,7 +38,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js",
     "dev": "nodemon app.js"
-
   },
   "keywords": [],
   "author": "",
