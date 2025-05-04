@@ -77,9 +77,10 @@ const PORT = process.env.BACKEND_PORT || 4000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
-});
+
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "build", "index.html"));
+// });
 
 // Create WebSocket server
 // const wss = new WebSocket.Server({ server });

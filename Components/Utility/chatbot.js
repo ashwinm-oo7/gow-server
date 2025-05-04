@@ -12,6 +12,17 @@ const extractOrderId = (message) => {
   const match = message.match(/[a-f\d]{24}/i); // MongoDB ObjectId format
   return match ? match[0] : null;
 };
+// const fs = require("fs");
+
+// Read content from a text or PDF (converted to text beforehand)
+// const contentFromFile = fs.readFileSync("./your-details.txt", "utf8"); // Make sure it's a plain text file
+
+// const messages = [
+//   {
+//     role: "system",
+//     content: contentFromFile,
+//   },
+// ];
 
 const wss = new WebSocket.Server({ noServer: true });
 function readSystemPrompt() {
@@ -63,6 +74,11 @@ wss.on("connection", (ws) => {
       const result = await model.generateContent(prompt);
       const botReply =
         result?.response?.text() || "Sorry, I couldn't understand.";
+
+      // Optionally extract topic
+      // const topicMatch = botReply.match(/TOPIC:\s*(.+)/i);
+      // const topic = topicMatch ? topicMatch[1].trim() : "General";
+      const cleanedReply = botReply.replace(/\s*(.+)$/i, "").trim();
 
       history.push({ sender: "bot", text: botReply });
 
