@@ -7,8 +7,10 @@ I'm your friendly shopping assistant. Here's everything you might need:
 🏪 <strong>Store Info</strong><br>
 <strong>Brand:</strong> Galaxy of Wishes<br>
 <strong>Locations:</strong> Mumbai, Pune, Hyderabad, Pratapgarh, Kanpur<br>
-<strong>Contact:</strong> 📞 9869904331 | ✉️ <a href="mailto:support@galaxyofwishes.com">support@galaxyofwishes.com</a><br>
-<strong>Website:</strong> 🌐 <a href="https://galaxyofwishes.vercel.app" target="_blank">Galaxy of Wishes</a><br>
+<strong>Contact:</strong> 📞 9869904331 | ✉️ 
+<a href="mailto:support@galaxyofwishes.com">support@galaxyofwishes.com</a><br>
+<strong>Website:</strong> 
+🌐 <a href="https://galaxyofwishes.vercel.app" target="_blank">Galaxy of Wishes</a><br>
 
 <hr>
 

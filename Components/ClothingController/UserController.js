@@ -12,7 +12,6 @@ const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(
   "336125404447-90vb4ndqndqtf1va7444lcl9us1quqle.apps.googleusercontent.com"
 );
-console.log("client", client);
 // Middleware for rate limiting
 const rateLimit = require("express-rate-limit");
 
@@ -467,13 +466,11 @@ router.post("/login", async (req, res) => {
       return res.status(404).json("Customer not found");
     }
     if (user.signupMethod === "google") {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message:
-            "This account was created using Google Sign-In. Please log in using Google.",
-        });
+      return res.status(403).json({
+        success: false,
+        message:
+          "This account was created using Google Sign-In. Please log in using Google.",
+      });
     }
     // Decrypt the password
     let dbUserPass = await EncryptionDecryption.decrypt(user.password);
